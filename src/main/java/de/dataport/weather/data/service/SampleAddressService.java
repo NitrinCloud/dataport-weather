@@ -93,12 +93,6 @@ public class SampleAddressService {
     }
 
     private String getAPIKey() {
-        try {
-            JsonObject jsonObject = GSON.fromJson(new FileReader("api.json"), JsonObject.class);
-            return jsonObject.get("key").getAsString();
-        } catch (FileNotFoundException e) {
-            LOGGER.error("API Key was not found, please create api.json with field key inside");
-            return null;
-        }
+        return System.getenv("api");
     }
 }
