@@ -64,7 +64,7 @@ public class MainLayout extends AppLayout {
 
         /**
          * Simple wrapper to create icons using LineAwesome iconset. See
-         * https://icons8.com/line-awesome
+         * <a href="https://icons8.com/line-awesome">icons8</a>
          */
         @NpmPackage(value = "line-awesome", version = "1.3.0")
         public static class LineAwesomeIcon extends Span {

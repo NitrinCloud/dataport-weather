@@ -1,43 +1,104 @@
 package de.dataport.weather.data.service;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 import de.dataport.weather.data.entity.SampleAddress;
-import java.util.Optional;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 
 @Service
 public class SampleAddressService {
 
-    private final SampleAddressRepository repository;
+    private static final Logger LOGGER = LoggerFactory.getLogger(SampleAddressService.class);
 
-    public SampleAddressService(SampleAddressRepository repository) {
-        this.repository = repository;
+    private static final Gson GSON = new GsonBuilder().serializeNulls().create();
+
+    public JsonObject getWeather(SampleAddress sampleAddress) {
+        JsonObject location = getLocation(sampleAddress);
+        String apiKey = getAPIKey();
+
+        if (apiKey == null) {
+            return null;
+        }
+
+        if (location != null) {
+            try {
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(new URI("https://api.openweathermap.org/data/3.0/onecall?lat=" +
+                                location.get("lat").getAsDouble() + "&lon=" +
+                                location.get("lon").getAsDouble() + "&units=metric&exclude=minutely,hourly,daily,alerts&appid=" + apiKey))
+                        .GET()
+                        .build();
+                HttpResponse<String> response = HttpClient.newBuilder()
+                        .build()
+                        .send(request, HttpResponse.BodyHandlers.ofString());
+                LOGGER.info(response.body());
+                return GSON.fromJson(response.body(), JsonObject.class);
+            } catch (URISyntaxException | IOException | InterruptedException ignored) {
+            }
+        }
+        return null;
     }
 
-    public Optional<SampleAddress> get(Long id) {
-        return repository.findById(id);
+    private JsonObject getLocation(SampleAddress sampleAddress) {
+        String requestCode = null;
+        String apiKey = getAPIKey();
+
+        if (apiKey == null) {
+            return null;
+        }
+
+        if ((sampleAddress.getPostalCode() != null && !sampleAddress.getPostalCode().isEmpty()) && (sampleAddress.getCountry() != null && !sampleAddress.getCountry().isEmpty())) {
+            requestCode = "https://api.openweathermap.org/geo/1.0/zip?zip=" +
+                    sampleAddress.getPostalCode() + "," + sampleAddress.getCountry() + "&appid=" + apiKey;
+        } else if ((sampleAddress.getCity() != null && !sampleAddress.getCity().isEmpty()) &&
+                ((sampleAddress.getCountry() != null && !sampleAddress.getCountry().isEmpty()) ||
+                        (sampleAddress.getState() != null && !sampleAddress.getState().isEmpty()))) {
+            requestCode = "https://api.openweathermap.org/geo/1.0/direct?q=" +
+                    sampleAddress.getCity() + ",";
+            if (sampleAddress.getState() != null) {
+                requestCode += sampleAddress.getState();
+            } else {
+                requestCode += sampleAddress.getCountry();
+            }
+            requestCode += "&limit=1&appid=" + apiKey;
+        }
+
+        if (requestCode != null) {
+            try {
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(new URI(requestCode))
+                        .GET()
+                        .build();
+                HttpResponse<String> response = HttpClient.newBuilder()
+                        .build()
+                        .send(request, HttpResponse.BodyHandlers.ofString());
+                LOGGER.info(response.body());
+                return GSON.fromJson(response.body(), JsonObject.class);
+            } catch (URISyntaxException | IOException | InterruptedException ignored) {
+            }
+        }
+        return null;
     }
 
-    public SampleAddress update(SampleAddress entity) {
-        return repository.save(entity);
+    private String getAPIKey() {
+        try {
+            JsonObject jsonObject = GSON.fromJson(new FileReader("api.json"), JsonObject.class);
+            return jsonObject.get("key").getAsString();
+        } catch (FileNotFoundException e) {
+            LOGGER.error("API Key was not found, please create api.json with field key inside");
+            return null;
+        }
     }
-
-    public void delete(Long id) {
-        repository.deleteById(id);
-    }
-
-    public Page<SampleAddress> list(Pageable pageable) {
-        return repository.findAll(pageable);
-    }
-
-    public Page<SampleAddress> list(Pageable pageable, Specification<SampleAddress> filter) {
-        return repository.findAll(filter, pageable);
-    }
-
-    public int count() {
-        return (int) repository.count();
-    }
-
 }

@@ -1,6 +1,7 @@
 package de.dataport.weather.views.about;
 
 import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -15,12 +16,13 @@ public class AboutView extends VerticalLayout {
     public AboutView() {
         setSpacing(false);
 
-        Image img = new Image("images/empty-plant.png", "placeholder plant");
+        Image img = new Image("images/dataport-logo.png", "Dataport");
         img.setWidth("200px");
         add(img);
 
-        add(new H2("This place intentionally left empty"));
-        add(new Paragraph("It’s a place where you can grow your own UI 🤗"));
+        add(new H2("Vaadin / REST API Project"));
+        add(new H3("Weather and Geocoding API from OpenWeather"));
+        add(new Paragraph("Here you can find out about the weather around the world"));
 
         setSizeFull();
         setJustifyContentMode(JustifyContentMode.CENTER);
