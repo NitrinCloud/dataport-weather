@@ -23,15 +23,13 @@
       --lumo-space-m: 1.125rem;
       --lumo-space-s: 0.75rem;
       --lumo-space-xs: 0.375rem;
-
     }
 
     [theme~="dark"] {
-      --lumo-primary-color-50pct: rgba(247, 127, 0, 0.5);
-      --lumo-primary-color-10pct: rgba(247, 127, 0, 0.1);
-      --lumo-primary-color: rgb(247, 127, 0);
-      --lumo-primary-text-color: rgb(252, 191, 73);
-      --lumo-base-color: rgb(33, 33, 33);
-      --lumo-body-text-color: rgb(234, 226, 183);
-
+        --lumo-primary-color-50pct: rgba(101, 2, 9, 0.5);
+        --lumo-primary-color-10pct: rgba(247, 127, 0, 0.1);
+        --lumo-primary-color: rgb(219, 12, 12);
+        --lumo-primary-text-color: rgb(222, 53, 84);
+        --lumo-base-color: rgb(33, 33, 33);
+        --lumo-body-text-color: rgb(234, 183, 187);
     }
